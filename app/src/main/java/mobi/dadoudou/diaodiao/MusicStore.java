@@ -1,6 +1,7 @@
 package mobi.dadoudou.diaodiao;
 
 import android.os.Environment;
+import android.util.Log;
 
 import org.farng.mp3.MP3File;
 import org.farng.mp3.TagException;
@@ -10,12 +11,16 @@ import org.farng.mp3.id3.ID3v1;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import mobi.dadoudou.diaodiao.mp3.Mp3ReadId3v1;
+import mobi.dadoudou.diaodiao.mp3.Mp3ReadId3v2;
 
 public class MusicStore {
 
@@ -99,44 +104,27 @@ public class MusicStore {
         Music music = new Music();
         music.setFile(file);
         music.setDirectory(file.getParentFile());
+        music.setAlbum("未知");
+        music.setName("未知");
+        music.setAuthor("未知");
         try {
-            MP3File mp3 = new MP3File(file.getAbsolutePath());
-            AbstractID3v2 id3v2 = mp3.getID3v2Tag();
-            ID3v1 id3v1 = mp3.getID3v1Tag();
-            if (id3v2 != null) {
-
-                System.out.println("id3v2");
-
-                System.out.println(id3v2.getAlbumTitle());//专辑名
-                System.out.println(id3v2.getSongTitle());//歌曲名
-                System.out.println(id3v2.getLeadArtist());//歌手
-
-                music.setAlbum(id3v2.getAlbumTitle());
-                music.setName(id3v2.getSongTitle());
-                music.setAuthor(id3v2.getLeadArtist());
-
-            } else {
-                System.out.println("id3v1");
-
-                System.out.println(id3v1.getAlbumTitle());
-                System.out.println(id3v1.getSongTitle());
-                System.out.println(id3v1.getLeadArtist());
-
-                music.setAlbum(id3v1.getAlbumTitle());
-                music.setName(id3v1.getSongTitle());
-                music.setAuthor(id3v1.getLeadArtist());
+            Mp3ReadId3v2 id3v2 = new Mp3ReadId3v2(new FileInputStream(file));
+            id3v2.readId3v2(1024 * 100);
+            music.setAlbum(id3v2.getSpecial());
+            music.setAuthor(id3v2.getAuthor());
+            music.setName(id3v2.getName());
+        } catch (Exception e) {
+            try {
+                Mp3ReadId3v1 id3v1 = new Mp3ReadId3v1(new FileInputStream(file));
+                id3v1.readId3v1();
+                music.setAlbum(id3v1.getSpecial());
+                music.setAuthor(id3v1.getAuthor());
+                music.setName(id3v1.getName());
+            } catch (FileNotFoundException e1) {
+                music.setAlbum("未知");
+                music.setName("未知");
+                music.setAuthor("未知");
             }
-            /*
-            AbstractLyrics3 lrc3Tag = mp3.getLyrics3Tag();
-            if (lrc3Tag != null) {
-                String lyrics = lrc3Tag.getSongLyric();
-                System.out.println(lyrics);
-            }
-            */
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
         }
         return music;
     }
