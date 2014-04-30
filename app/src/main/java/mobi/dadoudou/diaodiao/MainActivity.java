@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -74,7 +75,7 @@ public class MainActivity extends Activity {
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser == true && player != null && player.isPlaying()) {
+                if (fromUser && player != null && player.isPlaying()) {
                     player.seekTo(progress);
                 }
             }
@@ -138,10 +139,15 @@ public class MainActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.arg1 == ACTION_PLAY) {
+                if(musicList.size() == 0){
+                    Toast.makeText(MainActivity.this, "没有音乐文件", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 startBtn.setImageResource(R.drawable.media_pause);
-                if (pause == true && player != null) {
+                if (pause && player != null) {
                     player.start();
                     pause = false;
+                    Log.d(TAG, "暂停后开始播放");
                 } else {
                     playByPosition(current);
                 }
@@ -199,7 +205,7 @@ public class MainActivity extends Activity {
             player.setDataSource(MainActivity.this, uri);
             player.prepare();
             player.start();
-            if (loop == true) {
+            if (loop) {
                 player.setLooping(true);
             }
         } catch (IOException e) {
@@ -217,7 +223,7 @@ public class MainActivity extends Activity {
                 while (player != null && player.isPlaying() && current < total) {
                     try {
                         Thread.sleep(1000);
-                    } catch (InterruptedException e) {
+                    } catch (InterruptedException ignored) {
                     }
                     Message m = new Message();
                     m.arg1 = UPDATE_SEEKBAR;
