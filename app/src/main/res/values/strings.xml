@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="action_settings">设置</string>
     <string name="app_name">调调</string>
     <string name="tishi">提示</string>
     <string name="tuichutishi">退出提示</string>
