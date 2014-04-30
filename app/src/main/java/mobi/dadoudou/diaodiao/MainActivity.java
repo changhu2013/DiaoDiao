@@ -40,7 +40,6 @@ public class MainActivity extends Activity {
     private boolean loop = false;
 
     private TextView nameTextView;
-    private ImageView imageView;
 
     private SeekBar seekBar;
     private TextView currentTextView;
@@ -60,9 +59,6 @@ public class MainActivity extends Activity {
         musicList = MusicStore.getMusicStore().getAllMusicList();
 
         nameTextView = (TextView) findViewById(R.id.nameTextView);
-
-        imageView = (ImageView) findViewById(R.id.imageView);
-        imageView.setImageResource(R.drawable.denglijun);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         currentTextView = (TextView) findViewById(R.id.currentTextView);
@@ -89,6 +85,7 @@ public class MainActivity extends Activity {
 
         startBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Log.d(TAG, "点击开始按钮");
                 Message m = new Message();
                 if (player != null && player.isPlaying()) {
                     m.arg1 = ACTION_PAUSE;
@@ -111,6 +108,7 @@ public class MainActivity extends Activity {
 
         backwardBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Log.d(TAG, "点击上一首按钮");
                 Message m = new Message();
                 m.arg1 = ACTION_BACKWARD;
                 handler.sendMessage(m);
@@ -119,6 +117,7 @@ public class MainActivity extends Activity {
 
         forwardBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+                Log.d(TAG, "点击下一首按钮");
                 Message m = new Message();
                 m.arg1 = ACTION_FORWARD;
                 handler.sendMessage(m);
@@ -139,23 +138,29 @@ public class MainActivity extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.arg1 == ACTION_PLAY) {
-                if(musicList.size() == 0){
+                if (musicList.size() == 0) {
                     Toast.makeText(MainActivity.this, "没有音乐文件", Toast.LENGTH_LONG).show();
                     return;
                 }
                 startBtn.setImageResource(R.drawable.media_pause);
                 if (pause && player != null) {
+                    Log.d(TAG, "之前暂停,现在开始播放");
                     player.start();
                     pause = false;
-                    Log.d(TAG, "暂停后开始播放");
                 } else {
+                    Log.d(TAG, "开始播放");
                     playByPosition(current);
                 }
             } else if (msg.arg1 == ACTION_PAUSE) {
+                Log.d(TAG, "点击暂停按钮");
                 startBtn.setImageResource(R.drawable.media_start);
                 player.pause();
                 pause = true;
             } else if (msg.arg1 == ACTION_FORWARD) {
+                if (musicList.size() == 0) {
+                    Toast.makeText(MainActivity.this, "没有音乐文件", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 startBtn.setImageResource(R.drawable.media_pause);
                 if (player.isPlaying()) {
                     player.stop();
@@ -168,6 +173,10 @@ public class MainActivity extends Activity {
                 }
                 playByPosition(current);
             } else if (msg.arg1 == ACTION_BACKWARD) {
+                if (musicList.size() == 0) {
+                    Toast.makeText(MainActivity.this, "没有音乐文件", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 startBtn.setImageResource(R.drawable.media_pause);
                 if (player.isPlaying()) {
                     player.stop();
@@ -180,7 +189,6 @@ public class MainActivity extends Activity {
                 }
                 playByPosition(current);
             } else if (msg.arg1 == UPDATE_SEEKBAR) {
-
                 //更新进度条
                 seekBar.setProgress(msg.arg2);
                 currentTextView.setText(transTime(msg.arg2));
@@ -196,11 +204,10 @@ public class MainActivity extends Activity {
         try {
 
             Music music = musicList.get(position);
-
             String name = music.getName();
+            Log.d(TAG, "开始播放音乐:" + name);
             nameTextView.setText(name);
             Uri uri = Uri.fromFile(music.getFile());
-
             player.reset();
             player.setDataSource(MainActivity.this, uri);
             player.prepare();
